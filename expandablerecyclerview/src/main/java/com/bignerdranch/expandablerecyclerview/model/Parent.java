@@ -23,4 +23,6 @@ public interface Parent<C> {
      * @return true if expanded, false if not
      */
     boolean isInitiallyExpanded();
+
+    int getIdentifier();
 }
