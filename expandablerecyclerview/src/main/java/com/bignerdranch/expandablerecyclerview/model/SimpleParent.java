@@ -22,6 +22,11 @@ public class SimpleParent<C> implements Parent<C> {
     }
 
     @Override
+    public int getIdentifier() {
+        return hashCode();
+    }
+
+    @Override
     public List<C> getChildList() {
         return mChildList;
     }

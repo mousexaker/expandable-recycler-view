@@ -28,6 +28,11 @@ public class Recipe implements Parent<Ingredient> {
         return false;
     }
 
+    @Override
+    public int getIdentifier() {
+        return mName.hashCode();
+    }
+
     public Ingredient getIngredient(int position) {
         return mIngredients.get(position);
     }
