@@ -9,7 +9,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
@@ -17,6 +16,7 @@ import com.bignerdranch.expandablerecyclerviewsample.R;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Sample Activity for the vertical linear RecyclerView sample.
@@ -26,7 +26,7 @@ import java.util.List;
  * @version 1.0
  * @since 5/27/2015
  */
-public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
+public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity {
 
     private RecipeAdapter mAdapter;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -41,25 +41,13 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view_sample);
 
-        Ingredient beef = new Ingredient("beef", false);
-        Ingredient cheese = new Ingredient("cheese", true);
-        Ingredient salsa = new Ingredient("salsa", true);
-        Ingredient tortilla = new Ingredient("tortilla", true);
-        Ingredient ketchup = new Ingredient("ketchup", true);
-        Ingredient bun = new Ingredient("bun", true);
-
-        Recipe taco = new Recipe("taco", Arrays.asList(beef, cheese, salsa, tortilla));
-        Recipe quesadilla = new Recipe("quesadilla", Arrays.asList(cheese, tortilla));
-        Recipe burger = new Recipe("burger", Arrays.asList(beef, cheese, ketchup, bun));
-        final List<Recipe> recipes = Arrays.asList(taco, quesadilla, burger);
-
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-        mAdapter = new RecipeAdapter(this, recipes);
+        mAdapter = new RecipeAdapter(this, generateData());
         mAdapter.setExpandCollapseListener(new ExpandableRecyclerAdapter.ExpandCollapseListener() {
             @UiThread
             @Override
             public void onParentExpanded(int parentPosition) {
-                Recipe expandedRecipe = recipes.get(parentPosition);
+                Recipe expandedRecipe = mAdapter.getParentList().get(parentPosition);
 
                 String toastMsg = getResources().getString(R.string.expanded, expandedRecipe.getName());
                 Toast.makeText(VerticalLinearRecyclerViewSampleActivity.this,
@@ -71,7 +59,7 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
             @UiThread
             @Override
             public void onParentCollapsed(int parentPosition) {
-                Recipe collapsedRecipe = recipes.get(parentPosition);
+                Recipe collapsedRecipe = mAdapter.getParentList().get(parentPosition);
 
                 String toastMsg = getResources().getString(R.string.collapsed, collapsedRecipe.getName());
                 Toast.makeText(VerticalLinearRecyclerViewSampleActivity.this,
@@ -88,9 +76,33 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.d("Refresh", "refresh happening");
+                mSwipeRefreshLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.setParentList(generateData(), true);
+                        Toast.makeText(VerticalLinearRecyclerViewSampleActivity.this,
+                                "Data reloaded",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                        mSwipeRefreshLayout.setRefreshing(false);
+                    }
+                }, 1000); //1 sec
             }
         });
+    }
+
+    private List<Recipe> generateData() {
+        Ingredient beef = new Ingredient("beef " + random(0, 10), false);
+        Ingredient cheese = new Ingredient("cheese " + random(0, 10), true);
+        Ingredient salsa = new Ingredient("salsa " + random(0, 10), true);
+        Ingredient tortilla = new Ingredient("tortilla " + random(0, 10), true);
+        Ingredient ketchup = new Ingredient("ketchup " + random(0, 10), true);
+        Ingredient bun = new Ingredient("bun " + random(0, 10), true);
+
+        Recipe taco = new Recipe("taco", Arrays.asList(beef, cheese, salsa, tortilla));
+        Recipe quesadilla = new Recipe("quesadilla", Arrays.asList(cheese, tortilla));
+        Recipe burger = new Recipe("burger", Arrays.asList(beef, cheese, ketchup, bun));
+        return Arrays.asList(taco, quesadilla, burger);
     }
 
     @Override
@@ -103,5 +115,10 @@ public class VerticalLinearRecyclerViewSampleActivity extends AppCompatActivity{
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mAdapter.onRestoreInstanceState(savedInstanceState);
+    }
+
+    public static int random(int min, int max) {
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
     }
 }
